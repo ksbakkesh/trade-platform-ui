@@ -9,28 +9,30 @@ import {
 } from 'lucide-react'
 
 const nav = [
-  { href: '/',            label: 'Dashboard',        icon: LayoutDashboard },
-  { href: '/market',      label: 'Market Overview',  icon: TrendingUp },
-  { href: '/signals',     label: 'Live Signals',     icon: Activity },
-  { href: '/positions',   label: 'Positions',        icon: BarChart2 },
-  { href: '/trades',      label: 'Trade History',    icon: History },
-  { href: '/orders',      label: 'Orders',           icon: ClipboardList },
-  { href: '/risk',        label: 'Risk Management',  icon: Shield },
-  { href: '/funds',       label: 'Funds & Margin',   icon: Wallet },
-  { href: '/settings',    label: 'Strategy Settings',icon: Sliders },
-  { href: '/config',      label: 'Configuration',    icon: Settings },
-  { href: '/logs',        label: 'Logs',             icon: BookOpen },
-  { href: '/reports',     label: 'Reports',          icon: FileText },
-  { href: '/users',      label: 'User Management', icon: Users },
+  { href: '/',          label: 'Dashboard',         icon: LayoutDashboard, adminOnly: false },
+  { href: '/market',    label: 'Market Overview',   icon: TrendingUp,      adminOnly: false },
+  { href: '/signals',   label: 'Live Signals',      icon: Activity,        adminOnly: false },
+  { href: '/positions', label: 'Positions',         icon: BarChart2,       adminOnly: false },
+  { href: '/trades',    label: 'Trade History',     icon: History,         adminOnly: false },
+  { href: '/orders',    label: 'Orders',            icon: ClipboardList,   adminOnly: false },
+  { href: '/risk',      label: 'Risk Management',   icon: Shield,          adminOnly: false },
+  { href: '/funds',     label: 'Funds & Margin',    icon: Wallet,          adminOnly: false },
+  { href: '/settings',  label: 'Strategy Settings', icon: Sliders,         adminOnly: false },
+  { href: '/config',    label: 'Configuration',     icon: Settings,        adminOnly: true  },
+  { href: '/logs',      label: 'Logs',              icon: BookOpen,        adminOnly: true  },
+  { href: '/reports',   label: 'Reports',           icon: FileText,        adminOnly: true  },
+  { href: '/users',     label: 'User Management',   icon: Users,           adminOnly: true  },
 ]
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const path = usePathname()
   const { logout, user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'ROLE_ADMIN'
+
   return (
     <aside className="w-52 h-full flex flex-col border-r border-white/5 bg-surface overflow-y-auto">
       <nav className="flex-1 p-2 space-y-0.5">
-        {nav.map(({ href, label, icon: Icon }) => {
+        {nav.filter(item => !item.adminOnly || isAdmin).map(({ href, label, icon: Icon }) => {
           const active = path === href
           return (
             <Link

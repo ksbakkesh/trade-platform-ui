@@ -3,6 +3,9 @@ import { useAuth } from '@/lib/auth'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 
+// Pages only ADMIN can access
+const ADMIN_ONLY_ROUTES = ['/users', '/config', '/logs', '/reports']
+
 export default function RouteGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -12,8 +15,15 @@ export default function RouteGuard({ children }: { children: React.ReactNode }) 
     if (loading) return
     if (!user && path !== '/login') {
       router.push('/login')
+      return
     }
     if (user && path === '/login') {
+      router.push('/')
+      return
+    }
+    // Block non-admin users from admin-only routes
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'ROLE_ADMIN'
+    if (user && !isAdmin && ADMIN_ONLY_ROUTES.includes(path)) {
       router.push('/')
     }
   }, [user, loading, path, router])
