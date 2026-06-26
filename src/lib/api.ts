@@ -1,8 +1,20 @@
+import { getAuthHeaders } from './auth'
+
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
-const ACCOUNT_ID = 1 // single-account MVP
+
+// Get brokerAccountId from localStorage (set after broker setup)
+function getAccountId(): number {
+  if (typeof window === 'undefined') return 1
+  const stored = localStorage.getItem('tp_broker')
+  if (stored) return parseInt(stored)
+  return 1 // fallback
+}
 
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${API}${path}`, { cache: 'no-store' })
+  const res = await fetch(`${API}${path}`, {
+    cache: 'no-store',
+    headers: { ...getAuthHeaders() }
+  })
   if (!res.ok) throw new Error(`${path} → ${res.status}`)
   return res.json()
 }
@@ -10,7 +22,7 @@ async function get<T>(path: string): Promise<T> {
 async function post<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: body ? JSON.stringify(body) : undefined,
   })
   if (!res.ok) throw new Error(`${path} → ${res.status}`)
@@ -20,7 +32,7 @@ async function post<T>(path: string, body?: unknown): Promise<T> {
 async function patch<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: body ? JSON.stringify(body) : undefined,
   })
   if (!res.ok) throw new Error(`${path} → ${res.status}`)
@@ -132,17 +144,25 @@ export interface StrategySettings {
 
 // ---- API calls ----
 export const api = {
-  riskSummary: () => get<RiskSummary>(`/api/dashboard/risk/summary?accountId=${ACCOUNT_ID}`),
-  dailyPnl: () => get<DailyPnl>(`/api/dashboard/risk/daily-pnl?accountId=${ACCOUNT_ID}`),
-  todaySignals: () => get<Signal[]>(`/api/dashboard/signals/today?accountId=${ACCOUNT_ID}`),
-  todayTrades: () => get<Trade[]>(`/api/dashboard/trades/today?accountId=${ACCOUNT_ID}`),
-  openTrades: () => get<Trade[]>(`/api/dashboard/trades/open?accountId=${ACCOUNT_ID}`),
-  positions: () => get<Position[]>(`/api/dashboard/positions?accountId=${ACCOUNT_ID}`),
-  gannLevels: (index: string, openPrice: number) =>
-    get<GannLevels>(`/api/dashboard/market/levels?accountId=${ACCOUNT_ID}&index=${index}&liveOpenPrice=${openPrice}`),
+  // Dashboard — uses logged-in user's broker account
+  riskSummary:      () => get<RiskSummary>(`/api/dashboard/risk/summary?accountId=${getAccountId()}`),
+  dailyPnl:         () => get<DailyPnl>(`/api/dashboard/risk/daily-pnl?accountId=${getAccountId()}`),
+  todaySignals:     () => get<Signal[]>(`/api/dashboard/signals/today?accountId=${getAccountId()}`),
+  todayTrades:      () => get<Trade[]>(`/api/dashboard/trades/today?accountId=${getAccountId()}`),
+  openTrades:       () => get<Trade[]>(`/api/dashboard/trades/open?accountId=${getAccountId()}`),
+  positions:        () => get<Position[]>(`/api/dashboard/positions?accountId=${getAccountId()}`),
+  gannLevels:       (index: string, openPrice: number) =>
+    get<GannLevels>(`/api/dashboard/market/levels?accountId=${getAccountId()}&index=${index}&liveOpenPrice=${openPrice}`),
   strategySettings: (index: string) =>
-    get<StrategySettings>(`/api/admin/strategy-settings/account/${ACCOUNT_ID}/index/${index}`),
+    get<StrategySettings>(`/api/admin/strategy-settings/account/${getAccountId()}/index/${index}`),
   toggleAutoTrading: (settingsId: number, enabled: boolean) =>
     patch<StrategySettings>(`/api/admin/strategy-settings/${settingsId}/auto-trading?enabled=${enabled}`),
+
+  // Angel One — test endpoints (no auth needed)
   login: () => post<{ status: string }>('/api/test/angelone/login'),
+}
+
+// Call this after broker setup to store the accountId
+export function saveBrokerAccountId(id: number) {
+  localStorage.setItem('tp_broker', String(id))
 }

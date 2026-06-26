@@ -17,6 +17,7 @@ const nav = [
   { href: '/orders',    label: 'Orders',            icon: ClipboardList,   adminOnly: false },
   { href: '/risk',      label: 'Risk Management',   icon: Shield,          adminOnly: false },
   { href: '/funds',     label: 'Funds & Margin',    icon: Wallet,          adminOnly: false },
+  { href: '/broker',    label: 'Broker Setup',      icon: Wallet,          adminOnly: false },
   { href: '/settings',  label: 'Strategy Settings', icon: Sliders,         adminOnly: false },
   { href: '/config',    label: 'Configuration',     icon: Settings,        adminOnly: true  },
   { href: '/logs',      label: 'Logs',              icon: BookOpen,        adminOnly: true  },

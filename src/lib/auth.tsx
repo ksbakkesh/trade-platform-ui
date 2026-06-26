@@ -55,11 +55,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     localStorage.setItem('tp_user', JSON.stringify(u))
     setUser(u)
+
+    // Fetch and save broker account ID
+    try {
+      const brokerRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/broker/my-account`, {
+        headers: { Authorization: `Bearer ${data.token}` }
+      })
+      if (brokerRes.ok) {
+        const broker = await brokerRes.json()
+        localStorage.setItem('tp_broker', String(broker.id))
+      }
+    } catch {}
+
     router.push('/')
   }
 
   const logout = () => {
     localStorage.removeItem('tp_user')
+    localStorage.removeItem('tp_broker')
     setUser(null)
     router.push('/login')
   }
