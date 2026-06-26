@@ -325,6 +325,6 @@ function Field({ label, hint, value, onChange, step = 1 }: {
         className="w-full bg-surface-2 border border-white/10 rounded-lg px-3 py-2 text-data font-mono text-sm focus:outline-none focus:border-accent/50"
       />
       <p className="text-muted text-[10px] mt-0.5">{hint}</p>
-    </div>
+    </div> 
   )
 }
