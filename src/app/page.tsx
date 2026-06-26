@@ -4,6 +4,7 @@ import { RefreshCw } from 'lucide-react'
 import RiskGauge from '@/components/ui/RiskGauge'
 import PnlChart from '@/components/ui/PnlChart'
 import { api, RiskSummary, Trade, Position } from '@/lib/api'
+import { getAuthHeaders } from '@/lib/auth'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
@@ -49,13 +50,15 @@ export default function Dashboard() {
       } catch {}
       if (niftyOpen && parseFloat(niftyOpen) > 1000) {
         try {
-          const g = await fetch(`${API}/api/dashboard/market/levels?accountId=1&index=NIFTY&liveOpenPrice=${niftyOpen}`).then(r => r.json())
+          const accountId = localStorage.getItem('tp_broker') || '1'
+          const g = await fetch(`${API}/api/dashboard/market/levels?accountId=${accountId}&index=NIFTY&liveOpenPrice=${niftyOpen}`, { headers: getAuthHeaders() }).then(r => r.json())
           if (g.buyAbove) setNiftyGann(g)
         } catch {}
       }
       if (sensexOpen && parseFloat(sensexOpen) > 10000) {
         try {
-          const g = await fetch(`${API}/api/dashboard/market/levels?accountId=1&index=SENSEX&liveOpenPrice=${sensexOpen}`).then(r => r.json())
+          const accountId = localStorage.getItem('tp_broker') || '1'
+          const g = await fetch(`${API}/api/dashboard/market/levels?accountId=${accountId}&index=SENSEX&liveOpenPrice=${sensexOpen}`, { headers: getAuthHeaders() }).then(r => r.json())
           if (g.buyAbove) setSensexGann(g)
         } catch {}
       }
